@@ -1,0 +1,69 @@
+// ==UserScript==
+// @name         Verbleibende Arbeitszeit
+// @version      0.2
+// @description  try to take over the world!
+// @author       ChillerCommunity
+// @match        *oneportal.roche.com/irj/portal/simplyone*
+// @include      https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js
+// ==/UserScript==
+
+(function() {
+    'use strict';
+    window.onload = update;
+
+})();
+
+
+function update() {
+
+    // Get Data from Database
+    $.get({
+		url: "https://oneportal.roche.com/sap/opu/odata/sap/ZH38PT_CH_CLOCK_IO_SRV/ClockInOutSet?$skip=0&$top=100&$orderby=Time%20asc",
+        dataType: "text"
+	},
+	function(data, status){
+
+        // Convert String with Stamps to an Array of Strings
+        array = Array.from(
+            (new window.DOMParser()).parseFromString(
+                data,
+                "text/xml"
+            ).querySelectorAll(
+                "content"
+            )
+        ).map(
+            c=>c.firstChild.children[2].textContent
+        ).map(
+            t=>t.split("H")[0].split("T")[1]+":"+t.split("H")[1].split("M")[0]
+        );
+
+        // Create Update Interval
+        setInterval(x=> {
+
+            // Calculate Remaining Time
+            t=480;
+            for( let i=0; i<array.length+1; i+=2){
+                s=array[i];
+                e=array[i+1]||new Date().toTimeString();
+                t-=(e.split(":")[0]*60+ +e.split(":")[1])-(s.split(":")[0]*60+ +s.split(":")[1])
+            }
+
+            //If it's the home site
+            if (document.getElementsByClassName("fw-db-home-sub-welcome ng-binding").length > 0) {
+
+                //If no container is there create one
+                if (document.getElementById("remaining-time")  == null ){
+                    document.getElementsByClassName("fw-db-home-sub-welcome ng-binding")[0].innerHTML += '<br><br><br><h1 id="remaining-time"> </h1>';
+                }
+
+                // Update Container
+                if(t < 0){
+                    t = (-t) - 1;
+                    document.getElementById("remaining-time").innerHTML= "Verbleibende Arbeitszeit: 00:00:00<br><br>Überzeit: " + (Math.floor(t/60)+"").padStart(2,0)+":"+(t%60+"").padStart(2,0)+":"+((new Date()).getSeconds()+"").padStart(2,0);
+                }else{
+                    document.getElementById("remaining-time").innerHTML= "Verbleibende Arbeitszeit: " + (Math.floor(t/60)+"").padStart(2,0)+":"+(t%60+"").padStart(2,0)+":"+(59-(new Date()).getSeconds()+"").padStart(2,0);
+                }
+            }
+        }, 1000)
+    });
+}
