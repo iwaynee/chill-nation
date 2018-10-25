@@ -1,14 +1,20 @@
-Saleti Zemme
+Chill Nation
+============
 
-Step 1:
-Installieret üch s Addon TamperMonkey für Google Chrome, damit iher es Userscript chönd lah laufe lah.
-https://tampermonkey.net/
+This Tool allows to visualize your dayli overtime.
 
-Step 2:
-Kopieret de Inhalt vom script.txt ines neus Userscript
+Installation
+------------
 
-Step 3:
-Ctrl + S Drücke
+- Step 1:
+  Installieret Ã¼ch s Addon TamperMonkey fÃ¼r Google Chrome, damit iher es Userscript chÃ¶nd lah laufe lah.
+  https://tampermonkey.net/
 
-Step 4:
-https://oneportal.roche.com/irj/portal/simplyone ufrüefe
+- Step 2:
+  Kopieret de Inhalt vom script.txt ines neus Userscript
+
+- Step 3:
+  Ctrl + S DrÃ¼cke
+
+- Step 4:
+  https://oneportal.roche.com/irj/portal/simplyone ufrÃ¼efe
