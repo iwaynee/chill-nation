@@ -38,7 +38,7 @@ $.get({
         t=>t.split("H")[0].split("T")[1]+":"+t.split("H")[1].split("M")[0]
     );
     //console.log(array);
-    datapool.stempelungen = ["04:00"];//array;
+    datapool.stempelungen = array;
 });
 
 // Get Employee Id from API
@@ -146,7 +146,7 @@ setInterval(x=> {
             remaining_date.setSeconds(0);
             overtime_date.setSeconds(-t);
 
-            document.getElementById("over-time").innerHTML= "Überzeit:  <span style='margin-left:7em'>" + ((overtime_date.getHours()-1)+"").padStart(2,0)+":"+(overtime_date.getMinutes()+"").padStart(2,0)+":"+(overtime_date.getSeconds()+"").padStart(2,0) + "</span>";
+            document.getElementById("over-time").innerHTML= "Ãœberzeit:  <span style='margin-left:7em'>" + ((overtime_date.getHours()-1)+"").padStart(2,0)+":"+(overtime_date.getMinutes()+"").padStart(2,0)+":"+(overtime_date.getSeconds()+"").padStart(2,0) + "</span>";
 
         } else {
             remaining_date.setSeconds(t);
