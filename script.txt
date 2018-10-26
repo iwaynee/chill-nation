@@ -1,69 +1,165 @@
 // ==UserScript==
 // @name         Verbleibende Arbeitszeit
-// @version      0.2
+// @namespace    http://tampermonkey.net/
+// @version      0.3
 // @description  try to take over the world!
-// @author       ChillerCommunity
+// @author       You
 // @match        *oneportal.roche.com/irj/portal/simplyone*
+// @grant        none
 // @include      https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js
+// @run-at       document-end
 // ==/UserScript==
 
-(function() {
-    'use strict';
-    window.onload = update;
+var datapool = {
+    stempelungen: [],
+    JAZ: null,
+    Ferien: null,
+    employee_id: 0
 
-})();
+};
 
+// Get Badge Times from API
+$.get({
+    url: "https://oneportal.roche.com/sap/opu/odata/sap/ZH38PT_CH_CLOCK_IO_SRV/ClockInOutSet?$skip=0&$top=100&$orderby=Time%20asc",
+    dataType: "text"
+},
+      function(data, status){
+    // Convert String with Stamps to an Array of Strings
+    var array = Array.from(
+        (new window.DOMParser()).parseFromString(
+            data,
+            "text/xml"
+        ).querySelectorAll(
+            "content"
+        )
+    ).map(
+        c=>c.firstChild.children[2].textContent
+    ).map(
+        t=>t.split("H")[0].split("T")[1]+":"+t.split("H")[1].split("M")[0]
+    );
+    //console.log(array);
+    datapool.stempelungen = ["04:00"];//array;
+});
 
-function update() {
+// Get Employee Id from API
+$.get({
+    url: "https://oneportal.roche.com/sap/opu/odata/sap/ZH38PT_ZZ_LEAVE_REQ_CREATE_SRV/AbsenceTypeCollection",
+    dataType: "text"
+},
+      function(data, status){
+    // Convert String with Stamps to an Array of Strings
+    data = (new window.DOMParser()).parseFromString(
+        data,
+        "text/xml"
+    ).querySelectorAll(
+            "EmployeeID"
+    );
+    console.log(data[0].textContent);
+    datapool.employee_id = data[0].textContent;
 
-    // Get Data from Database
+    // Get JAZ Saldo from API
     $.get({
-		url: "https://oneportal.roche.com/sap/opu/odata/sap/ZH38PT_CH_CLOCK_IO_SRV/ClockInOutSet?$skip=0&$top=100&$orderby=Time%20asc",
+        url: "https://oneportal.roche.com/sap/opu/odata/sap/ZH38PT_ZZ_LEAVE_REQ_CREATE_SRV/AbsenceTypeCollection(EmployeeID='"+datapool.employee_id+"',AbsenceTypeCode='0030')/absenceTypeTimeAccount",
         dataType: "text"
-	},
-	function(data, status){
-
+    },
+          function(data, status){
         // Convert String with Stamps to an Array of Strings
-        array = Array.from(
-            (new window.DOMParser()).parseFromString(
-                data,
-                "text/xml"
-            ).querySelectorAll(
-                "content"
-            )
-        ).map(
-            c=>c.firstChild.children[2].textContent
-        ).map(
-            t=>t.split("H")[0].split("T")[1]+":"+t.split("H")[1].split("M")[0]
+        data = (new window.DOMParser()).parseFromString(
+            data,
+            "text/xml"
+        ).querySelectorAll(
+            "BalanceAvailableQuantity"
         );
-
-        // Create Update Interval
-        setInterval(x=> {
-
-            // Calculate Remaining Time
-            t=480;
-            for( let i=0; i<array.length+1; i+=2){
-                s=array[i];
-                e=array[i+1]||new Date().toTimeString();
-                t-=(e.split(":")[0]*60+ +e.split(":")[1])-(s.split(":")[0]*60+ +s.split(":")[1])
-            }
-
-            //If it's the home site
-            if (document.getElementsByClassName("fw-db-home-sub-welcome ng-binding").length > 0) {
-
-                //If no container is there create one
-                if (document.getElementById("remaining-time")  == null ){
-                    document.getElementsByClassName("fw-db-home-sub-welcome ng-binding")[0].innerHTML += '<br><br><br><h1 id="remaining-time"> </h1>';
-                }
-
-                // Update Container
-                if(t < 0){
-                    t = (-t) - 1;
-                    document.getElementById("remaining-time").innerHTML= "Verbleibende Arbeitszeit: 00:00:00<br><br>Überzeit: " + (Math.floor(t/60)+"").padStart(2,0)+":"+(t%60+"").padStart(2,0)+":"+((new Date()).getSeconds()+"").padStart(2,0);
-                }else{
-                    document.getElementById("remaining-time").innerHTML= "Verbleibende Arbeitszeit: " + (Math.floor(t/60)+"").padStart(2,0)+":"+(t%60+"").padStart(2,0)+":"+(59-(new Date()).getSeconds()+"").padStart(2,0);
-                }
-            }
-        }, 1000)
+        datapool.JAZ = data[0].textContent;
+        console.log(datapool.JAZ);
     });
-}
+
+    // Get Vacation Saldo from API
+    $.get({
+        url: "https://oneportal.roche.com/sap/opu/odata/sap/ZH38PT_ZZ_LEAVE_REQ_CREATE_SRV/AbsenceTypeCollection(EmployeeID='"+datapool.employee_id+"',AbsenceTypeCode='0040')/absenceTypeTimeAccount",
+        dataType: "text"
+    },
+          function(data, status){
+        // Convert String with Stamps to an Array of Strings
+        data = (new window.DOMParser()).parseFromString(
+            data,
+            "text/xml"
+        ).querySelectorAll(
+            "BalanceAvailableQuantity"
+        );
+        datapool.Ferien = data[0].textContent;
+        console.log(datapool.Ferien);
+    });
+});
+
+
+// MAIN INTERVAL ##########################################################################################################
+
+// Create Update Interval
+setInterval(x=> {
+
+    // Calculate Remaining Time
+    var t=480 * 60;
+
+    if (datapool.stempelungen.length > 0) {
+       if ((datapool.stempelungen.length%2) > 0){
+           for( let i=0; i<datapool.stempelungen.length+1; i+=2){
+               var s=datapool.stempelungen[i];
+               var e=datapool.stempelungen[i+1] || new Date().toTimeString();
+
+               t-=(
+                   e.split(":")[0]*60*60 + e.split(":")[1]*60
+               ) - (
+                   s.split(":")[0]*60*60+ +s.split(":")[1]*60
+               );
+           }
+       }else{
+            for( let i=0; i<datapool.stempelungen.length; i+=2){
+                var s=datapool.stempelungen[i];
+                var e=datapool.stempelungen[i+1];
+
+                t-=(
+                    e.split(":")[0]*60*60 + e.split(":")[1]*60
+                ) - (
+                    s.split(":")[0]*60*60+ +s.split(":")[1]*60
+                );
+            }
+        }
+
+        t -= (new Date()).getSeconds();
+    }
+
+
+    //If it's the home site
+    if (document.getElementsByClassName("fw-db-home-sub-welcome ng-binding").length > 0) {
+
+        //If no container is there create one
+        if (document.getElementById("remaining-time") == null ){
+            document.getElementsByClassName("fw-db-home-sub-welcome ng-binding")[0].innerHTML += '<br><br><br><h1 id="jaz-time"> </h1><br><h1 id="vacation-time"> </h1><br><h1 id="remaining-time"></h1><br><h1 id="over-time"></h1>';
+        }
+
+        var overtime_date = new Date(null);
+        var remaining_date = new Date(null);
+
+        // Update Container
+        if(t < 0){
+            remaining_date.setSeconds(0);
+            overtime_date.setSeconds(-t);
+
+            document.getElementById("over-time").innerHTML= "Überzeit:  <span style='margin-left:7em'>" + ((overtime_date.getHours()-1)+"").padStart(2,0)+":"+(overtime_date.getMinutes()+"").padStart(2,0)+":"+(overtime_date.getSeconds()+"").padStart(2,0) + "</span>";
+
+        } else {
+            remaining_date.setSeconds(t);
+        }
+
+        document.getElementById("remaining-time").innerHTML= "Verbleibende Arbeitszeit: <span style='margin-left:1em'>" + ((remaining_date.getHours()-1)+"").padStart(2,0)+":"+(remaining_date.getMinutes()+"").padStart(2,0)+":"+(remaining_date.getSeconds()+"").padStart(2,0) + "</span>";
+
+        if ( datapool.JAZ != null ) {
+            document.getElementById("jaz-time").innerHTML= "JAZ Saldo: <span style='margin-left:7em'>" + Math.floor(datapool.JAZ * 100) / 100 + " h" + "</span>";
+        }
+
+        if ( datapool.Ferien != null ) {
+            document.getElementById("vacation-time").innerHTML= "Ferien Saldo: <span style='margin-left:6em'>" + Math.floor(datapool.Ferien *100) / 100 + " h" + "</span>";
+        }
+    }
+}, 500);
