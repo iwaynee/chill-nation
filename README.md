@@ -1,7 +1,10 @@
 Chill Nation
 ============
 
-This Tool allows to visualize your dayli overtime.
+These Tool's help you to optimize your Workflow in Roch3 ;-)
+
+- ArbeitOnPoint (SimplyOne)
+- EldoraEmbellishement (eldora-roche.com)
 
 Installation
 ------------
@@ -21,4 +24,5 @@ Installation
 
 - Step 4:
 
-  https://oneportal.roche.com/irj/portal/simplyone ufrüefe
+  https://oneportal.roche.com/irj/portal/simplyone oder
+  https://www.eldora-roche.ch/ ufrüefe

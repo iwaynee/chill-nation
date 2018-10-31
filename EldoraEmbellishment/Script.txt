@@ -1,0 +1,34 @@
+// ==UserScript==
+// @name         Eldora Entcancerung
+// @version      0.1
+// @description  try to take over the world!
+// @match        *www.eldora-roche.ch/
+// @grant        none
+// @run-at       document-end
+// ==/UserScript==
+
+
+var Text1 = document.getElementsByClassName("prev-container-white next-dotpulse-eldora-restaurant-menuplanrestaurants");
+Text1[0].style.display = "none";
+
+var Text2 = document.getElementsByClassName("next-dotpulse-eldora-elements-subpages");
+Text2[0].style.display = "none";
+
+var Titel = document.getElementById("menuplan-0a402286-3f3d-4c4f-9b3c-e25b115c0efa");
+Titel.children[0].children[0].children[0].style.display = "none";
+
+
+// Menu details ausblenden
+var listen = document.getElementsByClassName("menu-list");
+
+for (var i1 = 0; i1 < listen.length; i1++) {
+    for (var i2 = 1; i2 < listen[i1].children.length; i2++){
+        listen[i1].children[i2].style.display = "none";
+    }
+}
+
+
+// Filter ausblenden
+
+var filter = document.getElementsByClassName("toggle-list")[0];
+filter.style.display = "none";

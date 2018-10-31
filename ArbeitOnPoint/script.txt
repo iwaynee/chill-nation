@@ -38,7 +38,7 @@ $.get({
         t=>t.split("H")[0].split("T")[1]+":"+t.split("H")[1].split("M")[0]
     );
     //console.log(array);
-    datapool.stempelungen = ["04:00"];//array;
+    datapool.stempelungen = array;
 });
 
 // Get Employee Id from API
