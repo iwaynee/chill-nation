@@ -2,7 +2,7 @@
 // @name         Verbleibende Arbeitszeit
 // @namespace    http://tampermonkey.net/
 // @version      0.3
-// @description  try to take over the world!
+// @description  Try to work on point!
 // @author       You
 // @match        *oneportal.roche.com/irj/portal/simplyone*
 // @grant        none
@@ -14,6 +14,7 @@ var datapool = {
     stempelungen: [],
     JAZ: null,
     Ferien: null,
+    entrys: [],
     employee_id: 0
 
 };
@@ -37,7 +38,7 @@ $.get({
     ).map(
         t=>t.split("H")[0].split("T")[1]+":"+t.split("H")[1].split("M")[0]
     );
-    //console.log(array);
+    console.log(array);
     datapool.stempelungen = array;
 });
 
@@ -59,7 +60,8 @@ $.get({
 
     // Get JAZ Saldo from API
     $.get({
-        url: "https://oneportal.roche.com/sap/opu/odata/sap/ZH38PT_ZZ_LEAVE_REQ_CREATE_SRV/AbsenceTypeCollection(EmployeeID='"+datapool.employee_id+"',AbsenceTypeCode='0030')/absenceTypeTimeAccount",
+        url: "https://oneportal.roche.com/sap/opu/odata/sap/ZH38PT_ZZ_LEAVE_REQ_CREATE_SRV/AbsenceTypeCollection(EmployeeID='"+datapool.employee_id+"',AbsenceTypeCode='0030',AttabsInd='A')/absenceTypeTimeAccount?$select=BalancePlannedQuantity,BalanceAvailableQuantity,BalanceUsedQuantity,TimeUnitName,TimeAccountTypeName&sap-client=010",
+
         dataType: "text"
     },
           function(data, status){
@@ -76,7 +78,8 @@ $.get({
 
     // Get Vacation Saldo from API
     $.get({
-        url: "https://oneportal.roche.com/sap/opu/odata/sap/ZH38PT_ZZ_LEAVE_REQ_CREATE_SRV/AbsenceTypeCollection(EmployeeID='"+datapool.employee_id+"',AbsenceTypeCode='0040')/absenceTypeTimeAccount",
+        url: "https://oneportal.roche.com/sap/opu/odata/sap/ZH38PT_ZZ_LEAVE_REQ_CREATE_SRV/AbsenceTypeCollection(EmployeeID='"+datapool.employee_id+"',AbsenceTypeCode='0040',AttabsInd='A')/absenceTypeTimeAccount?$select=BalancePlannedQuantity,BalanceAvailableQuantity,BalanceUsedQuantity,TimeUnitName,TimeAccountTypeName&sap-client=010",
+
         dataType: "text"
     },
           function(data, status){
@@ -90,16 +93,48 @@ $.get({
         datapool.Ferien = data[0].textContent;
         console.log(datapool.Ferien);
     });
+
+    // Get LeaveRequests from API
+    $.get({
+        url: "https://oneportal.roche.com/sap/opu/odata/sap/ZH38PT_ZZ_LEAVE_REQ_CREATE_SRV/LeaveRequestCollection?$filter=StartDate%20eq%20datetime%272018-10-01T00:00:00%27%20and%20EndDate%20eq%20datetime%272019-01-01T00:00:00%27%20and%20EmployeeID%20eq%20%27" + datapool.emplyee_id + "%27&$select=StatusCode,StatusName,AbsenceTypeCode,AbsenceTypeName,StartDate,StartTime,EndDate,EndTime&sap-client=010",
+        dataType: "text"
+    },
+    function(data, status){
+        // Convert data with Entry to an Array of Entrys
+        var array = Array.from((new window.DOMParser()).parseFromString(
+            data,
+            "text/xml"
+        ).querySelectorAll(
+            "properties"
+        )
+        ).map(c => c.children);
+
+        var d = new Date();
+
+        for(let i=0; i<array.length; i+=1){
+            if (array[i][4].innerHTML == (d.toISOString().split("T")[0] + "T00:00:00")){
+                if (array[i][5].innerHTML != "000000"){
+                    datapool.entrys.push(array[i])
+                }
+            }
+        }
+        console.log(datapool.entrys);
+    });
 });
 
 
 // MAIN INTERVAL ##########################################################################################################
-
 // Create Update Interval
 setInterval(x=> {
 
     // Calculate Remaining Time
     var t=480 * 60;
+
+    if (datapool.entrys.length > 0){
+        for(let i=0; i < datapool.entrys.length; i+=1){
+            t -= ((datapool.entrys[i][7].innerHTML.substr(0,2)*60*60 + datapool.entrys[i][7].innerHTML.substr(2,2)*60)- (datapool.entrys[i][5].innerHTML.substr(0,2)*60*60 + datapool.entrys[i][5].innerHTML.substr(2,2)*60));
+        }
+    }
 
     if (datapool.stempelungen.length > 0) {
        if ((datapool.stempelungen.length%2) > 0){
@@ -113,6 +148,7 @@ setInterval(x=> {
                    s.split(":")[0]*60*60+ +s.split(":")[1]*60
                );
            }
+           t -= (new Date()).getSeconds();
        }else{
             for( let i=0; i<datapool.stempelungen.length; i+=2){
                 var s=datapool.stempelungen[i];
@@ -125,8 +161,6 @@ setInterval(x=> {
                 );
             }
         }
-
-        t -= (new Date()).getSeconds();
     }
 
 
