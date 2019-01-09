@@ -5,26 +5,18 @@ These Tool's help you to optimize your Workflow in Roch3 ;-)
 
 - ArbeitOnPoint (SimplyOne)
 - EldoraEmbellishement (eldora-roche.com)
+- MeetupCodeDecryption
 
 Installation
 ------------
 
-- Step 1:
-
-  Installieret üch s Addon TamperMonkey für Google Chrome, damit iher es Userscript chönd lah laufe lah.
+- Install of Addon TamperMonkey
   https://tampermonkey.net/
 
-- Step 2:
+- Copy Content of script.txt into a new Userscript
 
-  Kopieret de Inhalt vom script.txt ines neus Userscript
+- Save Userscript with Ctrl + S
 
-- Step 3:
-
-  Ctrl + S Drücke
-
-- Step 4:
-
+- Call the respective page
   https://oneportal.roche.com/irj/portal/simplyone 
-  oder
-  https://www.eldora-roche.ch/ 
-  ufrüefe
+  https://www.eldora-roche.ch/
