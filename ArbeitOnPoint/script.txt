@@ -72,8 +72,10 @@ $.get({
         ).querySelectorAll(
             "BalanceAvailableQuantity"
         );
-        datapool.JAZ = data[0].textContent;
+        datapool.JAZ = data[0].textContent*3600
+
         console.log(datapool.JAZ);
+
     });
 
     // Get Vacation Saldo from API
@@ -163,7 +165,6 @@ setInterval(x=> {
         }
     }
 
-
     //If it's the home site
     if (document.getElementsByClassName("fw-db-home-sub-welcome ng-binding").length > 0) {
 
@@ -174,22 +175,25 @@ setInterval(x=> {
 
         var overtime_date = new Date(null);
         var remaining_date = new Date(null);
+        var jaz_date = new Date(null);
 
         // Update Container
         if(t < 0){
             remaining_date.setSeconds(0);
             overtime_date.setSeconds(-t);
+            var calculated_JAZ = datapool.JAZ - t
 
-            document.getElementById("over-time").innerHTML= "Überzeit:  <span style='margin-left:7em'>" + ((overtime_date.getHours()-1)+"").padStart(2,0)+":"+(overtime_date.getMinutes()+"").padStart(2,0)+":"+(overtime_date.getSeconds()+"").padStart(2,0) + "</span>";
+            document.getElementById("over-time").innerHTML= "Überzeit:  <span style='margin-left:7.7em'>" + ((overtime_date.getHours()-1)+"").padStart(2,0)+":"+(overtime_date.getMinutes()+"").padStart(2,0)+":"+(overtime_date.getSeconds()+"").padStart(2,0) + "</span>";
 
         } else {
             remaining_date.setSeconds(t);
+            var calculated_JAZ = datapool.JAZ
         }
 
         document.getElementById("remaining-time").innerHTML= "Verbleibende Arbeitszeit: <span style='margin-left:1em'>" + ((remaining_date.getHours()-1)+"").padStart(2,0)+":"+(remaining_date.getMinutes()+"").padStart(2,0)+":"+(remaining_date.getSeconds()+"").padStart(2,0) + "</span>";
 
         if ( datapool.JAZ != null ) {
-            document.getElementById("jaz-time").innerHTML= "JAZ Saldo: <span style='margin-left:7em'>" + Math.floor(datapool.JAZ * 100) / 100 + " h" + "</span>";
+            document.getElementById("jaz-time").innerHTML= "JAZ Saldo: <span style='margin-left:7em'>" + Math.floor((calculated_JAZ/3600) *100) / 100 + " h" + "</span>";
         }
 
         if ( datapool.Ferien != null ) {
