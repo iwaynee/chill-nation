@@ -92,7 +92,12 @@ $.get({
         ).querySelectorAll(
             "BalanceAvailableQuantity"
         );
-        datapool.Ferien = data[0].textContent;
+        var ferien = parseFloat(data[0].textContent);
+        if(data[1].textContent != null)
+        {
+            var ferienRestVorjahr = parseFloat(data[1].textContent);
+        }
+        datapool.Ferien = ferien + ferienRestVorjahr;
         console.log(datapool.Ferien);
     });
 
