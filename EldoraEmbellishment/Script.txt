@@ -2,7 +2,7 @@
 // @name         Eldora Entcancerung
 // @version      0.2
 // @description  try to take over the world!
-// @match        *www.eldora-roche.ch/
+// @match        *www.eldora-roche.ch/*
 // @grant        none
 // @run-at       document-end
 // ==/UserScript==
