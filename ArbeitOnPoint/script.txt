@@ -158,8 +158,8 @@ setInterval(x=> {
            t -= (new Date()).getSeconds();
        }else{
             for( let i=0; i<datapool.stempelungen.length; i+=2){
-                var s=datapool.stempelungen[i];
-                var e=datapool.stempelungen[i+1];
+                s=datapool.stempelungen[i];
+                e=datapool.stempelungen[i+1];
 
                 t-=(
                     e.split(":")[0]*60*60 + e.split(":")[1]*60
@@ -192,7 +192,7 @@ setInterval(x=> {
 
         } else {
             remaining_date.setSeconds(t);
-            var calculated_JAZ = datapool.JAZ
+            calculated_JAZ = datapool.JAZ
         }
 
         document.getElementById("remaining-time").innerHTML= "Verbleibende Arbeitszeit: <span style='margin-left:1em'>" + ((remaining_date.getHours()-1)+"").padStart(2,0)+":"+(remaining_date.getMinutes()+"").padStart(2,0)+":"+(remaining_date.getSeconds()+"").padStart(2,0) + "</span>";
